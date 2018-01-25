@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AMPSConfig>
+    <Name>AMPS View Server Demo</Name>
+
+    <MiniDumpDirectory>disabled</MiniDumpDirectory>
+
+    <Admin>
+        <FileName>stats.db</FileName>
+        <InetAddr>localhost:8085</InetAddr>
+        <Interval>10s</Interval>
+    </Admin>
+
+    <Transports>
+        <Transport>
+            <Name>json-websocket</Name>
+            <Type>tcp</Type>
+            <MessageType>json</MessageType>
+            <Protocol>websocket</Protocol>
+            <InetAddr>9000</InetAddr>
+        </Transport>
+        <Transport>
+            <Name>json-any</Name>
+            <Type>tcp</Type>
+            <MessageType>json</MessageType>
+            <Protocol>amps</Protocol>
+            <InetAddr>9007</InetAddr>
+        </Transport>
+    </Transports>
+
+    <Logging>
+        <Target>
+            <Protocol>file</Protocol>
+            <FileName>./logs/amps.log</FileName>
+            <RotationThreshold>3GB</RotationThreshold>
+            <Level>trace</Level>
+            <IncludeErrors>00-0000</IncludeErrors>
+        </Target>
+        <Target>
+            <Protocol>stdout</Protocol>
+            <Level>trace</Level>
+            <IncludeErrors>00-0015</IncludeErrors>
+        </Target>
+    </Logging>
+
+    <SOWStatsInterval>1s</SOWStatsInterval>
+
+    <SOW>
+        <Topic>
+            <Name>orders</Name>
+            <MessageType>json</MessageType>
+            <FileName>./sow/%n.sow</FileName>
+            <Key>/symbol</Key>
+            <Key>/ts</Key>
+            <Preprocessing>
+                <Field>UNIX_TIMESTAMP() as /ts</Field>
+            </Preprocessing>
+        </Topic>
+        <View>
+            <Name>vwap</Name>
+            <MessageType>json</MessageType>
+            <UnderlyingTopic>orders</UnderlyingTopic>
+            <Projection>
+                <Field>/symbol AS /symbol</Field>
+                <Field>SUM(/qty * /price) / SUM(/qty) AS /vwap</Field>
+            </Projection>
+            <Grouping>
+                <Field>/symbol</Field>
+            </Grouping>
+        </View>
+    </SOW>
+
+</AMPSConfig>
+
