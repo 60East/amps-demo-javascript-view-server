@@ -1,0 +1,87 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+.status-label {
+    color: red;
+    margin: 10px;
+}
+
+.right {
+    text-align: right;
+}
+
+.frame {
+    border: 1px black dotted;
+    padding: 10px;
+    margin: 10px;
+}
+
+input {
+    width: 500px;
+    height: 1.9em;
+    margin: 5px;
+}
+
+/* button { */
+/* } */
+
+button.query {
+    float: right;
+    border-radius: 5px;
+    background-color: darkgreen;
+    border: none;
+    color: white;
+    padding: 10px;
+    font-size: 14px;
+    text-decoration: none;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+button.clear {
+    border-radius: 5px;
+    background-color: #386fa4;
+    border: none;
+    color: white;
+    padding: 10px;
+    font-size: 14px;
+    text-decoration: none;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+button:disabled {
+    background-color: #ddd;
+    color: #606060;
+}
+
+.header {
+    padding: 10px;
+    margin-top: 0;
+    color: white;
+    background-color: #1b629c;
+    text-align: center;
+}
+
+.grid-title {
+    border-top: 1px #ddd solid;
+    border-left: 1px #ddd solid;
+    border-right: 1px #ddd solid;
+    background-color: #f5f7f7;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: #606060;
+    padding: 10px;
+}
+
+.ag-grid {
+    margin-bottom: 36px;
+}
+
+#logo {
+    margin-top: 5px;
+    float: left;
+}
