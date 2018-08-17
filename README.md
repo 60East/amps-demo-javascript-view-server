@@ -1,4 +1,4 @@
-# amps-blog-web-grid-bake-off
+# amps-demo-javascript-view-server
 
 This is the repo with the collection of the sample web-based View Server projects
 using different libraries and frameworks.
