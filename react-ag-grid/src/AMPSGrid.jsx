@@ -4,9 +4,12 @@
 
 import React from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid/dist/styles/ag-grid.css';
-import 'ag-grid/dist/styles/ag-theme-balham.css';
+import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-balham.css';
 import AMPSQuery from './AMPSQuery';
+
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 
 export default class AMPSGrid extends React.Component {
@@ -18,7 +21,7 @@ export default class AMPSGrid extends React.Component {
             rowData: []
         }
 
-        this.propsUpdated  = false;
+        this.query = new AMPSQuery();
     }
 
     render() {
@@ -26,7 +29,9 @@ export default class AMPSGrid extends React.Component {
             <div className="ag-theme-balham ag-grid" style={{...this.props.style, display: 'inline-block'}}>
                 <div className="grid-title">{this.props.title}</div>
 
-                <AgGridReact 
+                <AgGridReact
+                    theme="legacy"
+                    getRowId={({ data }) => String(data.rowId)}
                     animateRows={this.props.animate}
                     columnDefs={this.state.columnDefs} 
                     rowData={this.state.rowData} 
@@ -36,45 +41,15 @@ export default class AMPSGrid extends React.Component {
         );
     }
 
-    /**
-     * When the component did mount on the DOM, we're ready to initialize the data engine and run the query.
-     */
-    componentDidMount() {
-        this.query = new AMPSQuery();
-    }
+    componentDidUpdate(prevProps) {
+        const fields = ['topic', 'filter', 'options', 'orderBy', 'batchSize'];
+        const paramsChanged = fields.some(field =>
+            prevProps.params?.[field] !== this.props.params?.[field]
+        );
 
-    /**
-     * Here we decide if we need to reset the state due to the props update
-     */
-    componentWillReceiveProps(nextProps) {
-        if (!nextProps.params) {
-            this.propsUpdated = false;
-        }
-        else {
-            const theSame = this.props.params && nextProps.params && this.props.params.topic === nextProps.params.topic 
-                && this.props.params.filter === nextProps.params.filter
-                && this.props.params.options === nextProps.params.options
-                && this.props.params.orderBy === nextProps.params.orderBy
-                && this.props.params.batchSize === nextProps.params.batchSize;
-
-            if (!theSame) {
-                this.setState({
-                    columnDefs: [],
-                    rowData: []
-                });
-
-                this.propsUpdated = true;
-            }
-        }
-    }
-
-    /**
-     * This method is similar to the componentDidMount -- here we perform a new query using the new props.
-     */
-    componentDidUpdate() {
-        if (this.propsUpdated) {
-            this.propsUpdated = false;
-            this.handleQuery();
+        if (paramsChanged || prevProps.isQuery !== this.props.isQuery) {
+            this.query.reset();
+            this.setState({ columnDefs: [], rowData: [] }, () => this.handleQuery());
         }
     }
 
@@ -90,6 +65,7 @@ export default class AMPSGrid extends React.Component {
      * changed.
      */
     async handleQuery() {
+        if (!this.gridApi || !this.props.params) { return; }
         // clear the query if it's still working
         if (this.query.isWorking()) {
             this.query.reset();
@@ -126,7 +102,6 @@ export default class AMPSGrid extends React.Component {
      */
     handleOnGridReady(params) {
         this.gridApi = params.api;
-        this.columnApi = params.columnApi;
 
         this.handleQuery();
     }
@@ -145,7 +120,6 @@ export default class AMPSGrid extends React.Component {
         }
 
         this.setState(newState);
-        this.gridApi.sizeColumnsToFit();
     }
 
     /**
@@ -155,7 +129,7 @@ export default class AMPSGrid extends React.Component {
      */
     handleNewRecord(record) {
         // Append the message to the bottom
-        const rowNode = this.gridApi.updateRowData({add: [record]}).add[0];
+        const rowNode = this.gridApi.applyTransaction({add: [record]}).add[0];
 
         if (rowNode) {
             if (this.props.animate) {
@@ -168,10 +142,9 @@ export default class AMPSGrid extends React.Component {
      * This method will be called if an update to an existing record occurred.
      *
      * @param record {object} The new version of the existing record.
-     * @param rowIndex {number} The row index of the record in the grid.
      */
-    handleRecordUpdate(record, rowIndex) {
-        const rowNode = this.gridApi.getRowNode(rowIndex);
+    handleRecordUpdate(record) {
+        const rowNode = this.gridApi.getRowNode(String(record.rowId));
 
         if (rowNode) {
             rowNode.setData(record);
@@ -193,22 +166,15 @@ export default class AMPSGrid extends React.Component {
      * - The record no longer matches the filter criteria, or
      * - The subscriber is no longer entitled to view the new state of the record
      * @param record {object} The new version of the existing record.
-     * @param rowIndex {number} The row index of the record in the grid.
      */
-    handleRecordDelete(reason, record, rowIndex) {
-        const rowNode = this.gridApi.getRowNode(rowIndex);
+    handleRecordDelete(reason, record) {
+        const rowNode = this.gridApi.getRowNode(String(record.rowId));
 
         if (rowNode) {
             if (this.props.animate) {
-                this.gridApi.ensureIndexVisible(rowIndex, 'middle');
-
-                setTimeout(() => {
-                    this.gridApi.updateRowData({remove: [rowNode.data]});
-                }, 300);
+                this.gridApi.ensureIndexVisible(rowNode.rowIndex, 'middle');
             }
-            else {
-                this.gridApi.updateRowData({remove: [rowNode.data]});
-            }
+            this.gridApi.applyTransaction({remove: [rowNode.data]});
         }
     }
 
@@ -235,7 +201,7 @@ export default class AMPSGrid extends React.Component {
         return Object
             .keys(record)
             .filter(key => key !== 'rowId')
-            .map(key => {return {headerName: key, field: key}});
+            .map(key => ({headerName: key, field: key, flex: 1, minWidth: 100}));
     }
 }
 

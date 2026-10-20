@@ -7,7 +7,7 @@ technologies in order to provide web UI for a view server.
 
 #### Prerequisites
 
-- Node.js (**v6.9.1** or higher) with NPM (Node Package Manager). It can be 
+- Node.js **20.19+** or **22.12+** (including Node.js 24) with NPM (Node Package Manager). It can be
   downloaded from [the official website](https://nodejs.org/en/download/) or via 
   your operating system's [package manager](https://nodejs.org/en/download/package-manager/) (preferred).
 - AMPS Server **v5.2** or higher.
@@ -18,7 +18,7 @@ technologies in order to provide web UI for a view server.
 From the project directory, run the following command:
 
 ```bash
-npm install --save
+npm ci
 
 or
 
@@ -73,9 +73,10 @@ Any code modified in the `src` directory will be recompiled automatically while 
 
 #### AMPS Application settings
 
-Settings are available in `src/constants.ts`, such as:
+Settings are available in `src/constants.mjs`, such as:
 
-- *URI*: the URI the AMPS server instance;
+- *URI*: the URI of the AMPS server instance. The browser endpoint can also be set
+  with `VITE_AMPS_URI` in `.env.local` before starting or building the app.
 
 
 #### Modifying the source code
@@ -83,3 +84,33 @@ Settings are available in `src/constants.ts`, such as:
 All code of the application is located in the `src` directory. When `npm start` is running, any modifications to the 
 source code will recompile and refresh the web interface.
 
+
+#### Production build
+
+```bash
+npm run build
+npm run preview
+```
+
+Vite builds the application into `build/`. The preview command serves that build
+locally at `http://localhost:3000`; deploy the contents of `build/` to your web
+server for production. For a subdirectory deployment, pass the base path when
+building, for example `npm run build -- --base=/demo/`.
+
+The Vite build replaces Create React App and uses native module workers. It no
+longer installs an offline service worker. A retirement worker at
+`public/service-worker.js` lets previously installed versions stop serving the
+old cached application when they next check for an update.
+
+#### Smoke test
+
+```bash
+npm test
+```
+
+Run `npm run test:watch` to rerun the test as you edit files.
+
+The Vitest/jsdom test in `src/App.test.jsx` renders the heading and all three
+grids, then checks that unmounting disconnects and terminates their workers.
+Workers are mocked, so an AMPS server is not required. This checks rendering
+and cleanup; it does not verify browser layout or live AMPS data.

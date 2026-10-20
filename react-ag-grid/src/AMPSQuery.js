@@ -3,8 +3,6 @@
  * that is executed in a separate worker.
  */
 
-// eslint-disable-next-line
-import QueryEngine from 'worker-loader!./QueryEngine.js';
 
 
 export default class AMPSQuery {
@@ -28,7 +26,7 @@ export default class AMPSQuery {
 
             // Prepare to the query
             this.reset();
-            this.worker = new QueryEngine();
+            this.worker = new Worker(new URL('./QueryEngine.js', import.meta.url), { type: 'module' });
             this._isWorking = true;
 
             // Assign the worker event listener
@@ -74,7 +72,7 @@ export default class AMPSQuery {
 
         // Prepare to the query
         this.reset();
-        this.worker = new QueryEngine();
+        this.worker = new Worker(new URL('./QueryEngine.js', import.meta.url), { type: 'module' });
         this._isWorking = true;
 
         // Assign the worker event listener

@@ -5,11 +5,11 @@
  */
 
 const amps = require('amps');
-const { URI } = require('../src/constants');
 const SYMBOLS = ['AAPL', 'GOOGL', 'NKE', 'YHOO', 'MSFT', 'UBER', 'ADSK']
 
 
 async function main() {
+    const { URI } = await import('../src/constants.mjs');
     const client = new amps.Client('data-flow-generator')
     try {
         await client.connect(URI)

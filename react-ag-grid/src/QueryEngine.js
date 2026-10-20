@@ -1,5 +1,5 @@
 import { Client, Command } from 'amps';
-const { URI } = require('./constants');
+import { URI } from './constants.mjs';
 
 var data;
 var client;
@@ -90,8 +90,8 @@ self.addEventListener('message', function(event) {
                     if (rowId) {
                         var index = indexByRowId(rowId);
                         delete sowKeyMap[message.header.sowKey()];
-                        data.splice(index, 1);
-                        self.postMessage({oof: message.data, rowIndex: index, reason: message.header.reason()});
+                        const removedRecord = data.splice(index, 1)[0];
+                        self.postMessage({oof: removedRecord, rowIndex: index, reason: message.header.reason()});
                     }
                 }
             });
